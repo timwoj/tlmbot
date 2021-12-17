@@ -1,0 +1,13 @@
+{
+  "discord":
+  {
+    "app_id": "code-from-discord",
+    "public_key": "code-from-discord"
+  },
+  "web":
+  {
+    "host_ip": "localhost",
+    "port": 12345
+  },
+  "database_file": "/path/to/sqlite.db"  
+}
