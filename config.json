@@ -1,8 +1,7 @@
 {
   "discord":
   {
-    "app_id": "code-from-discord",
-    "public_key": "code-from-discord"
+    "token": "token-from-discord"
   },
   "web":
   {
