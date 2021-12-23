@@ -4,7 +4,7 @@ from urllib.parse import urlparse,parse_qs
 from datetime import datetime
 
 def connect(path):
-    conn = sqlite3.conn(path)
+    conn = sqlite3.connect(path)
     if not conn:
         print('Failed to load database file \'{:s}\''.format(config_file['database_file']))
         return None
@@ -13,9 +13,9 @@ def connect(path):
     cur.execute('create table if not exists urls('
                 'url text primary key not null,'
                 'count integer default 1,'
-                'latest datetime not null default (datetime(\'now\'),'
+                'latest datetime not null default current_timestamp,'
                 'orig_paster text not null,'
-                'orig_date datetime not null default (datetime(\'now\'))')
+                'orig_date datetime not null default current_timestamp)')
     conn.commit()
     return conn
 
