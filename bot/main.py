@@ -39,11 +39,18 @@ async def on_message(message):
         return
 
     for url in re.finditer(url_re, message.content):
-        result = db_utils.store_url(url_re, message.author.nick)
+        print(f'found a url: {url.group(0)}')
+        print(f'from: {message.author}')
+
+        # This stores the actual username instead of the nick so then we can
+        # look it up again against the current list of users when we report
+        # OFN.
+        # TODO: implement that lookup
+        result = db_utils.store_url(db, url.group(0), message.author.name)
 
         # If we got back something from the database, that means this URL is
         # OFN and we should say something.
         if result:
-            message.reply(f"OFN (originally pasted by {result['paster']} on {result['when']}).")
+            await message.reply(f"OFN (originally pasted by {result['paster']} on {result['when']}).")
 
 bot.run(config.get('discord',{}).get('token',''))
