@@ -8,7 +8,12 @@ def connect(path):
     if not conn:
         print('Failed to load database file \'{:s}\''.format(config_file['database_file']))
         return None
-        
+
+    # Ensure we get Row objects back for queries. This makes handling
+    # the results a little easier later.
+    conn.row_factory = sqlite3.Row
+
+    # Create a cursor and add the table if it doesn't exist already.
     cur = conn.cursor()
     cur.execute('create table if not exists urls('
                 'url text primary key not null,'
@@ -19,7 +24,10 @@ def connect(path):
     conn.commit()
     return conn
 
-def filter_query(f):
+# Parses a URL and strips unwanted params from
+def filter_query(url):
+
+    f = furl(url)
     keys_to_remove = set()
 
     for k in f.args:
@@ -32,16 +40,13 @@ def filter_query(f):
     return f.url
 
 def store_url(db, url, paster):
-    # parse the URL into a URI object and trim the tracking
-    # stuff off it
-    parsed = furl(url)
 
     # trim all of the tracking stuff off it
-    new_url = filter_query(parsed)
+    new_url = filter_query(url)
 
     # check if the new URI is in the database yet
-    cur = conn.cursor()
-    cur.execute('select * from links where url = ?', new_url)
+    cur = db.cursor()
+    cur.execute('select * from urls where url = ?', [new_url])
     results = cur.fetchone()
 
     if results:
@@ -51,15 +56,17 @@ def store_url(db, url, paster):
             'when': results['orig_date']
         }
 
-        cur.execute('update links (count, latest) set (?,?) where url = ?',
-                    results['count']+1, datetime.now(), new_url)
+        cur.execute('update urls set count = ?, latest = ? where url = ?',
+                    [results['count']+1, datetime.now(), new_url])
+        db.commit()
 
         return ret
 
     else:
         # insert new URL with new count and original date
-        cur.execute('insert into links(url, paster) values(?, ?)',
-                    new_url, paster)
+        cur.execute('insert into urls (url, orig_paster) values(?, ?)',
+                    [new_url, paster])
+        db.commit()
 
         return None
 
