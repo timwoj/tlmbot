@@ -43,12 +43,23 @@ def filter_query(url):
     f = furl(url)
     keys_to_remove = set()
 
-    for k in f.args:
-        if k.startswith('utm_'):
-            keys_to_remove.add(k)
+    # for Amazon URLs, there's a few things that are always true. First,
+    # all params are useless and can be removed. Also, the ending part of
+    # the path starting with 'ref=' can be removed, if it exists.
+    if f.host.find('amazon') != -1:
+        f.args.clear()
+        if f.path.segments[-1].startswith('ref='):
+            f.path.segments.pop()
 
-    for k in keys_to_remove:
-        f.args.pop(k)
+    else:
+        for k in f.args:
+            if f.host.find('amazon') != -1:
+                keys_to_remove.add(k)
+            elif k.startswith('utm_'):
+                keys_to_remove.add(k)
+
+        for k in keys_to_remove:
+            f.args.pop(k)
 
     return f.url
 
@@ -160,6 +171,14 @@ class _TestCases(unittest.TestCase):
         self.assertNotEqual(db, None)
         db.close()
         os.unlink(str(path))
+
+    def test_filter_query(self):
+        a = filter_query('https://test.com')
+        self.assertEqual(a, 'https://test.com')
+        a = filter_query('https://test.com?test=abcd&utm_thing=goaway')
+        self.assertEqual(a, 'https://test.com?test=abcd')
+        a = filter_query('https://www.amazon.com/Minions-Super-Size-Blaster-Sounds-Realistic/dp/B082G4ZZWH/ref=dp_fod_1?pd_rd_i=B082G4ZZWH&psc=1')
+        self.assertEqual(a, 'https://www.amazon.com/Minions-Super-Size-Blaster-Sounds-Realistic/dp/B082G4ZZWH')
 
     # TODO: decide how best to test the rest of these
     def test_store_url(self):
