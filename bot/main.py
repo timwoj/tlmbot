@@ -26,6 +26,9 @@ if not db:
 # This probably isn't a perfectly ideal regexp, but it'll
 # work to start with.
 url_re = re.compile('(https?|ftp)://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', re.IGNORECASE | re.DOTALL)
+karma_add_re = re.compile('(.*)\+\+$', re.IGNORECASE | re.DOTALL)
+karma_subtract_re = re.compile('(.*)--$', re.IGNORECASE | re.DOTALL)
+karma_lookup_re = re.compile('^karma (.*)', re.IGNORECASE | re.DOTALL)
 
 bot = discord.Client()
 
@@ -52,5 +55,24 @@ async def on_message(message):
         # OFN and we should say something.
         if result:
             await message.reply(f"OFN (originally pasted by {result['paster']} on {result['when']}).")
+
+    if (m := re.match(karma_lookup_re, message.content)) is not None:
+        text = m.group(1)
+        res = db_utils.get_karma(db, text)
+        await message.reply(f'{text} has a karma of {res}')
+
+    elif (m := re.match(karma_add_re, message.content)) is not None:
+        text = m.group(1)
+        space_pos = text.rfind(' ')
+        if space_pos != -1:
+            text = text[space_pos:]
+        db_utils.set_karma(db, text, message.author.name, True)
+
+    elif (m := re.match(karma_subtract_re, message.content)) is not None:
+        text = m.group(1)
+        space_pos = text.rfind(' ')
+        if space_pos != -1:
+            text = text[space_pos:]
+        db_utils.set_karma(db, text, message.author.name, False)
 
 bot.run(config.get('discord',{}).get('token',''))
