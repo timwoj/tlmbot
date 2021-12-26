@@ -2,7 +2,7 @@ import discord
 import sys
 import json
 import re
-from pathlib import Path # if you haven't already done so
+from pathlib import Path
 
 # Add the parent path to sys.path so we can search for modules in it
 # for utility code, plus get the root path to find the config file.
@@ -25,7 +25,8 @@ if not db:
 
 # This probably isn't a perfectly ideal regexp, but it'll
 # work to start with.
-url_re = re.compile('(https?|ftp)://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', re.IGNORECASE | re.DOTALL)
+url_re = re.compile('(https?|ftp)://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',
+                    re.IGNORECASE | re.DOTALL)
 karma_add_re = re.compile('(.*)\+\+$', re.IGNORECASE | re.DOTALL)
 karma_subtract_re = re.compile('(.*)--$', re.IGNORECASE | re.DOTALL)
 karma_lookup_re = re.compile('^karma (.*)', re.IGNORECASE | re.DOTALL)
