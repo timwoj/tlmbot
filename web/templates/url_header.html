@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+{% autoescape true -%}
+<html>
+  <head>
+    <title>#macfiles URL list</title>
+  </head>
+  <body>
+    <table width="100%">
+      <tr>
+        <td valign="bottom">
+          Current list generated at {{ now_str }}<br/>
+          {{ days_shown }}<p/>
+        </td>
+
+        <td align="right">
+          <div align="right">Filtering options:
+            <form method="post" action="http://10.0.0.9:8084/urls">
+              <select name="filter">
+                <option value="week" selected="selected">Default (Last 7 days)</option>
+                <option value="today">Today only</option>
+                <option value="month">Last month</option>
+                <option value="all">All links</option>
+                <option value="date">Filter by dates (fill in fields below)</option>
+              </select><br/>
+              <label for="start">Start Date: </label><input type="text" name="start" maxlength="10"/><br/>
+              <label for="end">End Date: </label><input type="text" name="end" maxlength="10"/><br/>
+              Dates are in the form yyyy-mm-dd<br/>
+              <input type="submit" name="bsubmit" value="Filter"/>
+              <input type="reset"/>
+            </form><p/>
+            <form method="post" action="http://10.0.0.9:8084/urls">
+              <label for="search">Or search by text: </label><input type="text" name="search" maxlength="40"/>
+              <input type="submit" name="bsubmit" value="Search"/>
+            </form><br/>
+          </div>
+        </td>
+      </tr>
+    </table>
+{% endautoescape -%}

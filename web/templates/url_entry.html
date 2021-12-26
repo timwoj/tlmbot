@@ -1,0 +1,15 @@
+{%- autoescape true %}
+      <tr>
+        <td>{{ time }}</td>
+        <td>({{ count }})</td>
+        <td><a href="{{ origurl }}">{{ origurl }}</a></td>
+      </tr>
+      {% for comment in comments -%}
+      <tr>
+        <td></td>
+        <td></td>
+        <td>Comment from {{ comment['commenter'] }} ({{ comment['when'] }}): {{ comment['comment'] }}</td>
+      </tr>
+      {% endfor -%}
+
+{% endautoescape -%}

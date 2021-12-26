@@ -72,6 +72,7 @@ def store_url(db, url, paster):
     cur = db.cursor()
     cur.execute('select * from urls where url = ?', [new_url])
     results = cur.fetchone()
+    ret = None
 
     if results:
         ret = {
@@ -82,51 +83,59 @@ def store_url(db, url, paster):
 
         cur.execute('update urls set count = ?, latest = ? where url = ?',
                     [results['count']+1, datetime.now(), new_url])
-        db.commit()
-
-        return ret
 
     else:
         # insert new URL with new count and original date
         cur.execute('insert into urls (url, orig_paster) values(?, ?)',
                     [new_url, paster])
-        db.commit()
 
-        return None
+    db.commit()
+    return ret
 
-def get_urls(db, start_date=None, end_date=None, pattern=None):
+def _query_urls(db, command, stack):
 
     cur = db.cursor()
-    command = 'select * from urls'
-    stack = []
+    if stack:
+        cur.execute(command, stack)
+    else:
+        cur.execute(command)
 
-    if start_date:
-        command += ' where latest >= ?'
-        stack.append(start_date)
-
-    if end_date:
-        if command.find('where') == -1:
-            command += ' where'
-        command += ' latest <= ?'
-        stack.append(end_date)
-
-    if pattern:
-        if command.find('where') == -1:
-            command += ' where'
-        command += ' url like ?'
-        stack.append(f'%{pattern}%')
-
-    command += ' order by latest desc'
-
-    cur.execute(command, stack)
     results = cur.fetchall()
     ret = []
     for r in results:
-        ret.append({'url': results['url'],
-                    'count': results['count'],
-                    'when': results['latest']})
+        ret.append({'url': r['url'],
+                    'count': r['count'],
+                    'when': r['latest']})
 
     return ret
+
+def get_urls(db, day_range=None, start_date=None, end_date=None):
+
+    command = 'select * from urls '
+    stack = []
+
+    if day_range == 'all':
+        # Nothing happens here. We just have the if statement to avoid
+        # fallthrough into one of the other cases
+        None
+    elif day_range:
+        command += f'where date(latest) between date("now", "{day_range}", "localtime") and date("now","localtime")'
+    elif start_date:
+        command += f'where datetime(latest) between datetime(?,"unixepoch") and datetime(?,"unixepoch")'
+        stack.append(start_date)
+        stack.append(end_date)
+    else:
+        command += 'where date(latest) = date("now","localtime")'
+
+    command += ' order by latest desc'
+    return _query_urls(db, command, stack)
+
+def search_urls(db, text):
+
+    cur = db.cursor()
+    command = 'select * from urls where url like ? order by latest desc'
+    stack = [f'%{text}%']
+    return _query_urls(db, command, stack)
 
 def set_karma(db, text, paster, increase):
     cur = db.cursor()
