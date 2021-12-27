@@ -2,6 +2,8 @@ import os
 import re
 import sys
 import json
+import threading
+
 from flask import Flask, render_template, request
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -136,5 +138,11 @@ def url_page():
     response_body += '</html>'
     return response_body
 
+def run(use_reloader):
+    app.run(host='10.0.0.9', port=8084, use_reloader=use_reloader)
+
+def create_thread():
+    return threading.Thread(target=run, args=(False,))
+
 if __name__ == '__main__':
-    app.run(host='10.0.0.9', port=8084)
+    run(True)

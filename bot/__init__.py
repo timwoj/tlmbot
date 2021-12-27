@@ -76,4 +76,8 @@ async def on_message(message):
             text = text[space_pos:]
         db_utils.set_karma(db, text, message.author.name, False)
 
-bot.run(config.get('discord',{}).get('token',''))
+def startup():
+    bot.run(config.get('discord',{}).get('token',''))
+
+if __name__ == '__main__':
+    startup()
