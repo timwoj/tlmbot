@@ -1,3 +1,5 @@
 Flask
 Werkzeug
 furl
+py-cord
+requests
