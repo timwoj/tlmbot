@@ -155,7 +155,7 @@ def set_karma(db, text, paster, increase):
         cur.execute('update karma set count = ? where string = ?',
                     [count, text])
     else:
-        cur.execute('insert into karma (string, orig_paster) values(?, ?14)',
+        cur.execute('insert into karma (string, orig_paster) values(?, ?)',
                     [text, paster])
 
     db.commit()
