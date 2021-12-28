@@ -7,11 +7,15 @@ from furl import furl
 from urllib.parse import urlparse,parse_qs
 from datetime import datetime
 
-def connect(path):
+def connect(path, read_only):
+
+    full_path = path
+    if read_only:
+        full_path = f'file:{path}?mode=ro'
 
     conn = None
     try:
-        conn = sqlite3.connect(path)
+        conn = sqlite3.connect(full_path)
     except:
         if 'unittest' not in sys.modules.keys():
             print(f'Failed to load database file \'{path}\': {sys.exc_info()[1]}')

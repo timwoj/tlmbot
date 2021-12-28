@@ -1,7 +1,6 @@
 import os
 import re
 import sys
-import json
 import threading
 
 from flask import Flask, render_template, request
@@ -12,19 +11,12 @@ app = Flask(__name__)
 app.debug = True
 
 # Add the parent path to sys.path so we can search for modules in it
-# for utility code, plus get the root path to find the config file.
+# for utility code.
 script_file = Path(__file__).resolve()
 root_path = script_file.parents[1]
 sys.path.append(str(root_path))
 
 import db_utils
-
-config_file = open(root_path.joinpath('config.json'))
-config = json.load(config_file)
-
-if not config:
-    print('Failed to load config file')
-    sys.exit(1)
 
 url_regex = re.compile(r'(http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)',
                        re.IGNORECASE | re.DOTALL)
@@ -36,7 +28,7 @@ app.jinja_env.filters['replace_url_links'] = replace_url_links
 @app.route('/urls', methods=['GET','POST'])
 def url_page():
 
-    db = db_utils.connect(config['database_file'])
+    db = db_utils.connect(app.config['database_file'], True)
     if not db:
         # TODO: return a 500 error here
         return ''
@@ -138,11 +130,15 @@ def url_page():
     response_body += '</html>'
     return response_body
 
-def run(use_reloader):
-    app.run(host='10.0.0.9', port=8084, use_reloader=use_reloader)
+def run(use_reloader,config):
 
-def create_thread():
-    return threading.Thread(target=run, args=(False,))
+    app.config['DATABASE_FILE'] = config.get('database_file','')
+    app.run(host=config.get('web',{}).get('host_ip',''),
+            port=config.get('web',{}).get('port', 8100),
+            use_reloader=use_reloader)
+
+def create_thread(config):
+    return threading.Thread(target=run, args=(False, config,))
 
 if __name__ == '__main__':
     run(True)
