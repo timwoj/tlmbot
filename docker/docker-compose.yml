@@ -1,0 +1,14 @@
+---
+version: "latest"
+services:
+  tlmbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./config:/tlmbot-config
+    ports:
+      - 8100:8100
+    network_mode: bridge
+    command: ["python3", "main.py", "--config", "/tlmbot-config/config.json"]
+    
