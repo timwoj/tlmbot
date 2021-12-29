@@ -56,7 +56,7 @@ class TLMBot(discord.Client):
 
         if (m := re.match(karma_lookup_re, message.content)) is not None:
             text = m.group(1)
-            res = db_utils.get_karma(self.db, text)
+            res = db_utils.get_karma(self.db, text.lower())
             await message.reply(f'{text} has a karma of {res}')
 
         elif (m := re.match(karma_add_re, message.content)) is not None:
@@ -64,14 +64,14 @@ class TLMBot(discord.Client):
             space_pos = text.rfind(' ')
             if space_pos != -1:
                 text = text[space_pos:]
-            db_utils.set_karma(self.db, text, message.author.name, True)
+            db_utils.set_karma(self.db, text.lower(), message.author.name, True)
 
         elif (m := re.match(karma_subtract_re, message.content)) is not None:
             text = m.group(1)
             space_pos = text.rfind(' ')
             if space_pos != -1:
                 text = text[space_pos:]
-            db_utils.set_karma(self.db, text, message.author.name, False)
+            db_utils.set_karma(self.db, text.lower(), message.author.name, False)
 
 def startup(config):
     bot = TLMBot(config=config)
