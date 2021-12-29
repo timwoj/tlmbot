@@ -28,7 +28,7 @@ app.jinja_env.filters['replace_url_links'] = replace_url_links
 @app.route('/urls', methods=['GET','POST'])
 def url_page():
 
-    db = db_utils.connect(app.config['database_file'], True)
+    db = db_utils.connect(app.config['DATABASE_FILE'], True)
     if not db:
         # TODO: return a 500 error here
         return ''
@@ -109,10 +109,10 @@ def url_page():
         dateval = result['when'].split(' ')[0]
         if current_date != dateval:
             if firstpass == False:
-                response_body += '</table>\n'
+                response_body += '    </table>\n'
             response_body += '    <p/>\n\n'
             response_body += f'    <h3><u>{dateval}</u></h3>\n'
-            response_body += '    <table>\n'
+            response_body += '    <table>'
 
             firstpass = False
             current_date = dateval
@@ -125,7 +125,9 @@ def url_page():
 
         response_body += render_template('url_entry.html', **template_values)
 
-    response_body += '</table>\n'
+    if results:
+        response_body += '    </table>\n'
+
     response_body += '  </body>\n'
     response_body += '</html>'
     return response_body
