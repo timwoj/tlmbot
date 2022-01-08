@@ -43,3 +43,10 @@ class URLStorage(commands.Cog, name='URLs'):
             if result:
                 when = datetime.fromisoformat(f"{result['when']}+00:00")
                 await message.reply(f"OFN (originally pasted by {result['paster']} on {when}).")
+
+    @commands.command()
+    async def url_list(self, ctx):
+        """
+        Returns the link to the URL page.
+        """
+        await ctx.reply(f'Were you looking for https://madleet.com/tlm ?')
