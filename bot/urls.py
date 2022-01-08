@@ -50,7 +50,7 @@ class URLStorage(commands.Cog, name='URLs'):
                 await message.reply(f"OFN (originally pasted by {result['paster']} on {when_str}).")
 
     @commands.command()
-    async def url_list(self, ctx):
+    async def urls(self, ctx):
         """
         Returns the link to the URL page.
         """
