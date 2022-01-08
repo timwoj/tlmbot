@@ -3,7 +3,7 @@ import discord
 from datetime import datetime
 from discord.ext import commands
 
-from . import karma, bot_utils, urls
+from . import karma, bot_utils, urls, others
 
 # Importing this requires adding the top-level repo path the PYTHONPATH. Currently
 # I'm doing this by creating a tlmbot.pth file in venv/lib/<python_version>/site-packages
@@ -31,6 +31,7 @@ class TLMBot(commands.Bot):
 
         self.add_cog(karma.Karma(self))
         self.add_cog(urls.URLStorage(self))
+        self.add_cog(others.Others(self))
 
     async def on_ready(self):
         print(f'Logged in as {self.user}')
