@@ -1,29 +1,24 @@
 import discord
-import sys
-import re
-from pathlib import Path
 
-# Add the parent path to sys.path so we can search for modules in it
-# for utility code, plus get the root path to find the config file.
-script_file = Path(__file__).resolve()
-root_path = script_file.parents[1]
-sys.path.append(str(root_path))
+from datetime import datetime
+from discord.ext import commands
 
+from . import karma, bot_utils, urls
+
+# Importing this requires adding the top-level repo path the PYTHONPATH. Currently
+# I'm doing this by creating a tlmbot.pth file in venv/lib/<python_version>/site-packages
+# which contains just the path to the directory. I've tried doing
+# 'from .. import db_utils' but python complains and I don't feel like figuring
+# out the correct pythonic way to do it.
 import db_utils
 
-# This probably isn't a perfectly ideal regexp, but it'll
-# work to start with.
-url_re = re.compile('(https?|ftp)://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',
-                    re.IGNORECASE | re.DOTALL)
-karma_add_re = re.compile('(.*)\+\+$', re.IGNORECASE | re.DOTALL)
-karma_subtract_re = re.compile('(.*)--$', re.IGNORECASE | re.DOTALL)
-karma_lookup_re = re.compile('^karma (.*)', re.IGNORECASE | re.DOTALL)
-
-class TLMBot(discord.Client):
+class TLMBot(commands.Bot):
 
     def __init__(self, config, *args, **kwargs):
 
-        super().__init__(*args, **kwargs)
+        super().__init__(command_prefix='!',
+                         help_command=commands.MinimalHelpCommand(dm_help=True),
+                         *args, **kwargs)
 
         self.config = config
         self.db = db_utils.connect(self.config.get('database_file',''), False)
@@ -32,46 +27,22 @@ class TLMBot(discord.Client):
             # to nuke the other thread somehow.
             sys.exit(1)
 
+        self.start_time = datetime.now()
+
+        self.add_cog(karma.Karma(self))
+        self.add_cog(urls.URLStorage(self))
+
     async def on_ready(self):
         print(f'Logged in as {self.user}')
 
     async def on_message(self, message):
-        if message.author == self.user:
+        # Run this first so that commands get processed correctly. Everything else
+        # can be processed after. Also, this should only ever be run in the main
+        # bot class. Otherwise you get duplicate responses to commands.
+        await self.process_commands(message)
+
+        if bot_utils.should_ignore(message, self):
             return
-
-        for url in re.finditer(url_re, message.content):
-            print(f'found a url: {url.group(0)}')
-            print(f'from: {message.author}')
-
-            # This stores the actual username instead of the nick so then we can
-            # look it up again against the current list of users when we report
-            # OFN.
-            # TODO: implement that lookup
-            result = db_utils.store_url(self.db, url.group(0), message.author.name)
-
-            # If we got back something from the database, that means this URL is
-            # OFN and we should say something.
-            if result:
-                await message.reply(f"OFN (originally pasted by {result['paster']} on {result['when']}).")
-
-        if (m := re.match(karma_lookup_re, message.content)) is not None:
-            text = m.group(1)
-            res = db_utils.get_karma(self.db, text.lower())
-            await message.reply(f'{text} has a karma of {res}')
-
-        elif (m := re.match(karma_add_re, message.content)) is not None:
-            text = m.group(1)
-            space_pos = text.rfind(' ')
-            if space_pos != -1:
-                text = text[space_pos:]
-            db_utils.set_karma(self.db, text.lower(), message.author.name, True)
-
-        elif (m := re.match(karma_subtract_re, message.content)) is not None:
-            text = m.group(1)
-            space_pos = text.rfind(' ')
-            if space_pos != -1:
-                text = text[space_pos:]
-            db_utils.set_karma(self.db, text.lower(), message.author.name, False)
 
 def startup(config):
     bot = TLMBot(config=config)
