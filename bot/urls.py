@@ -3,6 +3,7 @@ import db_utils # See bot/__init__.py for a note about this
 
 from discord.ext import commands
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from . import bot_utils
 
@@ -41,8 +42,12 @@ class URLStorage(commands.Cog, name='URLs'):
             # If we got back something from the database, that means this URL is
             # OFN and we should say something.
             if result:
-                when = datetime.fromisoformat(f"{result['when']}+00:00")
-                await message.reply(f"OFN (originally pasted by {result['paster']} on {when}).")
+                when = datetime.fromisoformat(f"{result['when']}")
+                utc = ZoneInfo('UTC')
+                est = ZoneInfo('America/New_York')
+                when = when.replace(tzinfo=utc).astimezone(est)
+                when_str = when.strftime('%Y-%m-%d %I:%M:%S %p %Z')
+                await message.reply(f"OFN (originally pasted by {result['paster']} on {when_str}).")
 
     @commands.command()
     async def url_list(self, ctx):
