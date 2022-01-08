@@ -3,7 +3,11 @@ import db_utils # See bot/__init__.py for a note about this
 
 from discord.ext import commands
 from datetime import datetime
-from zoneinfo import ZoneInfo
+
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
 
 from . import bot_utils
 
