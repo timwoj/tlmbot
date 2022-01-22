@@ -85,8 +85,10 @@ def store_url(db, url, paster):
             'when': results['orig_date']
         }
 
+        now = datetime.now().replace(microsecond = 0)
+
         cur.execute('update urls set count = ?, latest = ? where url = ?',
-                    [results['count']+1, datetime.now(), new_url])
+                    [results['count']+1, now, new_url])
 
     else:
         # insert new URL with new count and original date

@@ -1,4 +1,5 @@
 import discord
+import sys
 
 from datetime import datetime
 from discord.ext import commands
