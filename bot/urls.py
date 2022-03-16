@@ -3,6 +3,7 @@ import db_utils # See bot/__init__.py for a note about this
 
 from discord.ext import commands
 from datetime import datetime
+from furl import furl
 
 try:
     from zoneinfo import ZoneInfo
@@ -40,12 +41,17 @@ class URLStorage(commands.Cog, name='URLs'):
             # This stores the actual username instead of the nick so then we can
             # look it up again against the current list of users when we report
             # OFN.
-            # TODO: implement that lookup
             result = db_utils.store_url(self.bot.db, url.group(0), message.author.name)
 
             # If we got back something from the database, that means this URL is
             # OFN and we should say something.
             if result:
+
+                # Don't OFN URLs that are likely giphy reactions
+                f = furl(url.group(0))
+                if f.host == 'tenor.com' or f.host == 'giphy.com':
+                    continue
+
                 when = datetime.fromisoformat(f"{result['when']}")
                 utc = ZoneInfo('UTC')
                 est = ZoneInfo('America/New_York')
