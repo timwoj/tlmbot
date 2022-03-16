@@ -55,6 +55,10 @@ def filter_query(url):
         if f.path.segments[-1].startswith('ref='):
             f.path.segments.pop()
 
+    elif f.host.find('twitter') != -1:
+        # For Twitter, the same thing holds about params
+        f.args.clear()
+
     else:
         for k in f.args:
             if f.host.find('amazon') != -1:
