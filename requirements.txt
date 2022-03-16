@@ -5,3 +5,4 @@ py-cord
 requests
 humanize
 backports.ZoneInfo; python_version < '3.9'
+tzdata
