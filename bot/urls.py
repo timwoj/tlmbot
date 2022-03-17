@@ -23,7 +23,7 @@ class URLStorage(commands.Cog, name='URLs'):
     # This probably isn't a perfectly ideal regexp, but it'll
     # work to start with.
     url_re = re.compile(
-        '(https?|ftp)://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',
+        '(https?|ftp)://(?:[a-zA-Z]|[0-9]|[#$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',
         re.IGNORECASE | re.DOTALL)
 
     def __init__(self, bot):
